@@ -1,6 +1,6 @@
 import pytest
 
-from descriptors.descriptor import models
+from projects.descriptors import models
 
 
 class Model(models.Model):
