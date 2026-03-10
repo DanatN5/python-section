@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from wallets.exceptions import NotComparisonException, NegativeValueException
-from wallets.currencies import rub, usd, Currency
+from projects.wallets.exceptions import NotComparisonException, NegativeValueException
+from projects.wallets.currencies import rub, usd, Currency
 
 @dataclass(frozen=True)
 class Money:
@@ -19,6 +19,8 @@ class Money:
     def __sub__(self, other):
         self.check_currency(other)
         new_value = self.value - other.value
+        if new_value < 0:
+            raise NegativeValueException
         return Money(new_value, self.currency)
     
     def is_negative(self):
@@ -61,5 +63,3 @@ class Wallet:
             raise NegativeValueException
         self.currencies[money.currency] = val
         return self
-
-
