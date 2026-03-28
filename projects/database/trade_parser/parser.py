@@ -27,21 +27,37 @@ def get_xls_links(url: str, date_until: datetime):
             continue
         href = link_tag.get("href")
 
-        date_tag = item.select_one(".accordeon-inner__item-inner__title p") # выбираем тег с датой отчета
-        if not date_tag:
+        date_tag = get_pdf_link_date(item) # выбираем тег с датой отчета
+        if date_tag is None:
             continue
 
         if is_relevant(date_tag, date_until): #если дата отчета подходит возвращаем ссылку
             yield 'https://spimex.com' + href
 
 
-        
+def get_pdf_link_date(link_tag: Tag) -> datetime:
+    """
+    Вытаскивает дату из тега, преобразует в datetime
+    """
+    date_tag = link_tag.select_one(".accordeon-inner__item-inner__title p > span")
+    if not date_tag:
+            return None
+    date_text = date_tag.text.strip().split(".")
+    day, month, year = date_text
+    file_date = datetime(year, month, day)
 
-def is_relevant(date_tag: Tag, date_until: datetime) -> bool:
+    return file_date
+
+
+def get_xls_link_date(link_tag: Tag) -> datetime:
 
     """
-    Вытаскивает дату из тега, преобразует в datetime и фильтрует теги относительно даты
+    Вытаскивает дату из тега, преобразует в datetime
     """
+
+    date_tag = link_tag.select_one(".accordeon-inner__item-inner__title p")
+    if not date_tag:
+        return None
 
     months = {
         "Январь": 1, "Февраль": 2, "Март": 3, "Апрель": 4,
@@ -55,6 +71,11 @@ def is_relevant(date_tag: Tag, date_until: datetime) -> bool:
     year = int(parts[1])
 
     file_date = datetime(year=year, month=month, day=1)
+
+    return file_date
+
+
+def is_relevant(file_date: datetime, date_until: datetime) -> bool:
 
     if file_date >= date_until:
         return True
@@ -80,11 +101,3 @@ def connect_url(url: str) -> Response:
             raise
 
     return html
-
-
-link = get_xls_links(url, datetime(2024, 10, 1))
-
-a = next(link)
-
-res = requests.get(a)
-print(res.headers.get("Content-Type"))
