@@ -31,8 +31,8 @@ def get_xls_links(url: str, date_until: datetime):
         if not date_tag:
             continue
 
-        if is_relevant(date_tag, date_until):
-            yield href
+        if is_relevant(date_tag, date_until): #если дата отчета подходит возвращаем ссылку
+            yield 'https://spimex.com' + href
 
 
         
@@ -82,8 +82,9 @@ def connect_url(url: str) -> Response:
     return html
 
 
-links = get_xls_links(url, datetime(2023, 12, 1))
-print(next(links))
-print(next(links))
-print(next(links))
-print(next(links))
+link = get_xls_links(url, datetime(2024, 10, 1))
+
+a = next(link)
+
+res = requests.get(a)
+print(res.headers.get("Content-Type"))
