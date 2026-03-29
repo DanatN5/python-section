@@ -9,30 +9,32 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-url = "https://spimex.com/markets/oil_products/trades/results/"
-
-
-def get_xls_links(url: str, date_until: datetime):
+def get_pdf_links(url: str, date_until: datetime):
 
     '''Парсит ссылки на бюллетени по итогам торгов за месяц, если они новее указанной даты'''
+    while True:
 
-    html = connect_url(url)
+        html = connect_url(url)
+        
+        soup = BeautifulSoup(html.text, "html.parser")
+        items = soup.select(".accordeon-inner__wrap-item")
     
-    soup = BeautifulSoup(html.text, "html.parser")
-    items = soup.select(".accordeon-inner__wrap-item")
- 
-    for item in items:
-        link_tag = item.select_one("a.link.xls")
-        if not link_tag:
-            continue
-        href = link_tag.get("href")
+        for item in items:
+            link_tag = item.select_one("a.link.pdf")
+            if not link_tag:
+                continue
+            href = link_tag.get("href")
 
-        date_tag = get_pdf_link_date(item) # выбираем тег с датой отчета
-        if date_tag is None:
-            continue
+            date_tag = get_pdf_link_date(item) # выбираем тег с датой отчета
+            if date_tag is None:
+                continue
 
-        if is_relevant(date_tag, date_until): #если дата отчета подходит возвращаем ссылку
+            if not is_relevant(date_tag, date_until): #если дата отчета подходит возвращаем ссылку
+                return
             yield 'https://spimex.com' + href
+
+        next_page = soup.select_one(".bx-pag-next a").get("href")
+        url = 'https://spimex.com' + next_page
 
 
 def get_pdf_link_date(link_tag: Tag) -> datetime:
@@ -44,35 +46,10 @@ def get_pdf_link_date(link_tag: Tag) -> datetime:
             return None
     date_text = date_tag.text.strip().split(".")
     day, month, year = date_text
-    file_date = datetime(year, month, day)
+    file_date = datetime(int(year), int(month), int(day))
 
     return file_date
 
-
-def get_xls_link_date(link_tag: Tag) -> datetime:
-
-    """
-    Вытаскивает дату из тега, преобразует в datetime
-    """
-
-    date_tag = link_tag.select_one(".accordeon-inner__item-inner__title p")
-    if not date_tag:
-        return None
-
-    months = {
-        "Январь": 1, "Февраль": 2, "Март": 3, "Апрель": 4,
-        "Май": 5, "Июнь": 6, "Июль": 7, "Август": 8,
-        "Сентябрь": 9, "Октябрь": 10, "Ноябрь": 11, "Декабрь": 12
-    }
-
-    date_text = date_tag.text.strip()
-    parts = date_text.split()
-    month = months.get(parts[0])
-    year = int(parts[1])
-
-    file_date = datetime(year=year, month=month, day=1)
-
-    return file_date
 
 
 def is_relevant(file_date: datetime, date_until: datetime) -> bool:
