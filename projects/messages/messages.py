@@ -19,6 +19,14 @@ class ParsedMessage:
     """There is no need to describe anything here."""
 
 
+class MessageParser(abc.ABC):
+    def __init__(self, message: JsonMessage) -> None:
+        self.message = message
+
+    @abc.abstractmethod
+    def parse(self) -> ParsedMessage:
+        pass
+
 
 class ParserFactory:
     def __init__(self):
@@ -37,14 +45,6 @@ class ParserFactory:
 
 message_factory = ParserFactory()
 
-
-class MessageParser(abc.ABC):
-    def __init__(self, message: JsonMessage) -> None:
-        self.message = message
-
-    @abc.abstractmethod
-    def parse(self) -> ParsedMessage:
-        pass
 
 
 @message_factory.register(message_type=MessageType.TELEGRAM)

@@ -25,4 +25,12 @@ def prepare_data(df: pd.DataFrame) -> pd.DataFrame:
 
     return filtered
 
+"""
+URL = "https://spimex.com/files/trades/result/pdf/oil/oil_20260327162000.pdf?r=7724"
 
+df = prepare_data(pdf_reader(URL))
+
+for _, row in df.iterrows():
+    print(row)
+
+"""
