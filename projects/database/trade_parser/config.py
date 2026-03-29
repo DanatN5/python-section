@@ -10,4 +10,4 @@ DB_PORT = os.environ.get('DB_PORT')
 DB_USER = os.environ.get('DB_USER')
 DB_PASS = os.environ.get('DB_PASS')
 
-DATE_UNTIL = datetime(2026, 3, 18)
+DATE_UNTIL = datetime(2026, 3, 27)
